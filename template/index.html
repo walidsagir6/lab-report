@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 1.4px solid #0096ff;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 5px;
+        }
+
+        .meta-line {
+            font-size: 12px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* EDITABLE TEXT AREA */
+        .report-area {
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        
+        .report {
+            min-height: 350px;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            width: 100%;
+            line-height: 1.6;
+            font-size: 16px;
+            padding: 20px;
+            background: #fff;
+        }
+
+        .report:focus {
+            border-color: #0096ff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 150, 255, 0.2);
+        }
+
+        /* FOOTER */
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #000;
+            margin-top: 30px;
+            border-top: 1.5px solid #0096ff;
+            padding-top: 20px;
+        }
+
+        .footer-item {
+            flex: 1;
+        }
+
+        .footer-item span {
+            font-weight: bold;
+        }
+
+        .signature-image {
+            max-height: 45px;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+
+        /* BUTTONS */
+        .button-section {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding-top: 25px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-email {
+            background: #000;
+            color: white;
+        }
+
+        .btn-email:hover {
+            background: #333;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-whatsapp:hover {
+            background: #20ba5a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">Azeeya Global General Hospitals Limited</div>
+            <div class="meta-line">
+                Azeeya global general hospitals limited <br>
+                <b>Contacts: </b> 08033584051 <br>
+                <b>Email: </b>azeeyaglobalgeneralhospitalslimmited@gmail.com <br>
+                <b>LABORATORY REPORT</b>
+            </div>
+        </div>
+
+        <!-- TEXT AREA FOR DAD TO TYPE IN -->
+        <section class="report-area">
+            <div id="input-field" contenteditable="true" class="report" placeholder="Type report text here..."></div>
+        </section>
+
+        <!-- FOOTER SECTION -->
+        <div class="footer-info">
+            <div class="footer-item">
+                <span>Diagnostician:</span> Dr Sagir Usman
+            </div>
+            <div class="footer-item">
+                <span>Signature:</span> <img src="static/signature.png" alt="Signature" class="signature-image">
+            </div>
+            <div class="footer-item">
+                <span id="date">Date: Loading...</span>
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="button-section">
+            <button class="btn btn-email" id="generate-btn">Generate PDF</button>
+            <button class="btn btn-whatsapp" onclick="window.location.href='https://wa.me'">Send via WhatsApp</button>
+        </div>
+    </div>
+
+    <script>
+        const txtArea = document.getElementById("input-field");
+        const emailBtn = document.getElementById('generate-btn');
+        
+        // Setup automatically calculated live date
+        const todayISO = new Date().toISOString().split('T')[0];
+        const dateElement = document.getElementById('date');
+        dateElement.textContent = `Date: ${todayISO}`;
+
+        function getTxt() {
+            return txtArea.innerText.trim();
+        }
+
+        emailBtn.addEventListener('click', async function() {
+            const typedText = getTxt();
+            if (!typedText) {
+                alert('Please enter the lab report text before generating.');
+                return;
+            }
+
+            // We build a pristine HTML blueprint specifically optimized for WeasyPrint.
+            // It completely skips dynamic browser JavaScript tags to stop PDF engine crashes!
+            const pristineHtmlLayout = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Lab Report</title>
+        <style>
+    * { 
+        margin: 0; 
+        padding: 0; 
+        box-sizing: border-box; 
+    }
+    
+    /* 1. Define the total size of the sheet of paper */
+    @page {
+        size: A4;
+        margin: 0; /* Clear out default margins so our code handles position layout entirely */
+    }
+
+    body { 
+        font-family: Arial, sans-serif; 
+        background: white; 
+        color: #000;
+        line-height: 1.6;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* 2. Create a structural box wrapper that fills up the total A4 paper page height */
+    .container { 
+        width: 100%;
+        min-height: 297mm; 
+        position: relative; 
+        padding-top: 25mm;
+        padding-left: 20mm;
+        padding-right: 20mm;
+        padding-bottom: 45mm; 
+    }
+
+    .header { 
+        text-align: center; 
+        padding-bottom: 15px; 
+        border-bottom: 1.5px solid #0096ff; 
+        margin-bottom: 35px;
+        margin-top:-60px;
+    }
+
+    .logo { 
+        font-size: 26px; 
+        font-weight: bold; 
+        margin-bottom: 5px; 
+    }
+
+    .meta-line { 
+        font-size: 12px; 
+        color: #333; 
+        line-height: 1.6; 
+    }
+
+    .report-area { 
+        width: 100%; 
+        margin-top: 20px; 
+    }
+
+    .report { 
+        width: 100%; 
+        line-height: 1.6; 
+        font-size: 16px; 
+        white-space: pre-wrap; 
+        word-wrap: break-word; 
+        page-break-inside: auto; 
+    }
+
+    /* 3. THE FIXED HOOK: Pins the elements directly to the bottom line of the 297mm page box */
+    .footer-info { 
+        position: absolute;
+        bottom: 0mm; /* 👈 Adjust this number to push it higher or lower on the paper grid edge */
+        left: 20mm;
+        right: 20mm;
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        font-size: 12px; 
+        border-top: 1.5px solid #0096ff; 
+        padding-top: 15px;
+        background: white;
+    }
+
+    .footer-item { 
+        flex: 1; 
+    }
+
+    .footer-item span { 
+        font-weight: bold; 
+    }
+
+    .signature-image { 
+        max-height: 45px; 
+        vertical-align: middle; 
+    }
+</style>
+
+
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="logo">Azeeya Global General Hospitals Limited</div>
+                        <div class="meta-line">
+                            Azeeya global general hospitals limited <br>
+                            <b>Contacts: </b> 08033584051 <br>
+                            <b>Email: </b>azeeyaglobalgeneralhospitalslimmited@gmail.com <br>
+                            <b>LABORATORY REPORT</b>
+                        </div>
+                    </div>
+                    
+                    <section class="report-area">
+                        <div class="report">${typedText.replace(/\n/g, '<br>')}</div>
+                    </section>
+
+                    <div class="footer-info">
+                        <div class="footer-item"><span>Diagnostician:</span> Dr Sagir Usman</div>
+                        <div class="footer-item"><span>Signature:</span> <img src="static/signature.png" alt="Signature" class="signature-image"></div>
+                        <div class="footer-item"><span>Date: ${todayISO}</span></div>
+                    </div>
+                </div>
+            </body>
+            </html>`;
+
+            try {
+                const res = await fetch('/generate_pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ html_content: pristineHtmlLayout })
+                });
+
+                if (res.ok) {
+                    const fileBlob = await res.blob();
+                    const downloadUrl = window.URL.createObjectURL(fileBlob);
+                    
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `Lab_Report_${todayISO}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(downloadUrl); 
+                } else {
+                    alert('Server error generating your PDF.');
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert('Network transmission breakdown.');
+            }
+        });
+    </script>
+</body>
+</html>
