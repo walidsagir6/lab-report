@@ -1,0 +1,6 @@
+fastapi==0.95.2
+uvicorn[standard]==0.23.1
+Jinja2==3.1.2
+weasyprint==57.1
+python-multipart==0.0.6
+aiofiles==23.1.0
